@@ -1,0 +1,26 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    ports:
+      - "2181:2181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+    command: ["/wait-for-it.sh", "zookeeper:2181", "--timeout=30", "--", "/etc/confluent/docker/run"]
+
+    volumes:
+      - ./wait-for-it.sh:/wait-for-it.sh:ro
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_NUM_REPLICA_FETCHERS: 1
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
